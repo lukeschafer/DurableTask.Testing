@@ -223,11 +223,24 @@ namespace DurableTask.Testing.Context
 
             knownContexts.Add(newContextId, context);
 
-            await orchestrationMethod.InvokeWithDefaultsAsync(orchestratorInstance,
+            var invocationResult = orchestrationMethod.InvokeWithDefaultsAsync(orchestratorInstance,
                 serviceProvider,
                 [context, functionContext, CancellationToken.None])!;
 
-            return default!;
+            // Await the orchestrator completion and extract the result
+            await invocationResult;
+
+            // Get the result from the task
+            var resultProperty = invocationResult.GetType().GetProperty("Result");
+            var output = resultProperty?.GetValue(invocationResult);
+
+            // Set the output on the context for potential later retrieval
+            if (output != null)
+            {
+                context.SetOutput(output);
+            }
+
+            return (TResult)output!;
         }
 
         public override void ContinueAsNew(object? newInput = null, bool preserveUnprocessedEvents = true)

@@ -47,14 +47,17 @@ namespace DurableTask.Testing
         private readonly IServiceProvider _serviceProvider;
         private readonly Assembly _functionAssembly;
         private readonly FunctionContext _functionContext;
+        private readonly Func<DateTime> _getCurrentUtcTime;
 
         public FakeDurableTaskClient(IServiceProvider serviceProvider,
             Assembly functionAssembly,
-            FunctionContext functionContext) : base("fake")
+            FunctionContext functionContext,
+            Func<DateTime> getCurrentUtcTime) : base("fake")
         {
             _serviceProvider = serviceProvider;
             _functionAssembly = functionAssembly;
             _functionContext = functionContext;
+            _getCurrentUtcTime = getCurrentUtcTime;
         }
 
         public FakeDurableTaskClient WithEventPayload(string eventName, object? payload)
@@ -111,6 +114,7 @@ namespace DurableTask.Testing
                             _functionContext,
                             _functionAssembly,
                             _timerOverride,
+                            _getCurrentUtcTime,
                             _eventPayloads,
                             () => ScheduleNewOrchestrationInstanceAsync(orchestratorName,
                                 input,
